@@ -1,0 +1,54 @@
+CREATE OR REPLACE FUNCTION switchWorkerActivity() RETURNS SETOF worker AS
+$BODY$
+DECLARE
+    r worker%rowtype;
+
+BEGIN
+    FOR r IN SELECT * FROM worker
+    LOOP
+        IF r.is_still_working = true THEN
+            r.is_still_working = false;
+        ELSE
+            r.is_still_working = true;
+        END IF;
+        RETURN NEXT r;
+    END LOOP;
+    RETURN;
+END
+$BODY$
+LANGUAGE plpgsql;
+
+SELECT * FROM switchWorkerActivity()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+CREATE FUNCTION check_not_neg_id() RETURNS trigger AS $func$
+    BEGIN
+        IF NEW.id < 0 THEN
+            RAISE EXCEPTION 'id cant be lower than one';
+        END IF;
+
+        RETURN NEW;
+    END;
+$func$ LANGUAGE plpgsql;
+
+CREATE TRIGGER dep_first_letter BEFORE INSERT OR UPDATE ON department
+    FOR EACH ROW EXECUTE PROCEDURE check_not_neg_id();
+
+
+
+!!!!!!!!!!!!!!!!!!!
+SELECT * FROM department;
+
+
+SELECT * FROM department;
+
+!!!!!!!!!!!!!!!!!
+INSERT INTO department (id, production) VALUES (20, 'TESTDICH');
+
+
+UPDATE department
+SET production = 'other dich'
+WHERE id = 15;
+
+
+DELETE FROM department WHERE id == 15
